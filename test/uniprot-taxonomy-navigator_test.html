@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>uniprot-taxonomy-navigator test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../uniprot-taxonomy-navigator.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <uniprot-taxonomy-navigator></uniprot-taxonomy-navigator>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('uniprot-taxonomy-navigator', function() {
+        var element,
+          server;
+
+        var responseHeaders = {
+          json: { 'Content-Type': 'application/json' }
+        };
+
+        setup(function() {
+          element = fixture('basic');
+          server = sinon.fakeServer.create();
+          server.respondWith('GET',
+            'http://www.ebi.ac.uk/proteins/api/taxonomy/id/131567/children'
+            , [
+              200,
+              responseHeaders.json,
+              '{"taxonomies":[{"taxonomyId":2759,"mnemonic":"9EUKA","scientificName":"Eukaryota","commonName":"eucaryotes","rank":"superkingdom"},{"taxonomyId":2157,"mnemonic":"9ARCH","scientificName":"Archaea","rank":"superkingdom"},{"taxonomyId":2,"mnemonic":"9BACT","scientificName":"Bacteria","commonName":"eubacteria","rank":"superkingdom"}]}'
+            ]
+          );
+          server.respondWith('GET',
+            'http://www.ebi.ac.uk/proteins/api/taxonomy/id/131567/parent'
+            , [
+              200,
+              responseHeaders.json,
+              '{"taxonomyId":1,"mnemonic":"9ZZZZ","scientificName":"root","rank":"no rank"}'
+            ]
+          );
+        })
+
+        teardown(function(){
+          server.restore();
+        })
+
+        test('default taxon is set', function() {
+          assert.equal(element.taxon, 131567);
+        });
+
+        test('navigates down', function(done) {
+          var el = {
+            model:{
+              item:{
+                taxonomyId:2759
+              }
+            }
+          };
+          var ajax = Polymer.dom(element.root).querySelector("#requestChildren");
+
+          ajax.addEventListener('request', function (e) {
+              server.respond();
+          });
+
+          ajax.addEventListener('response', function() {
+            expect(element.selected).to.be.equal(2759);
+            expect(element.showBackButton).to.be.true;
+            expect(element.taxa.length).to.be.equal(3);
+            done();
+          })
+
+          element.navigateDown(el);
+        })
+
+        test('navigates up', function(done) {
+          var ajax = Polymer.dom(element.root).querySelector("#requestParent");
+
+          ajax.addEventListener('request', function (e) {
+              server.respond();
+          });
+
+          ajax.addEventListener('response', function() {
+            expect(element.selected).to.be.equal(1);
+            expect(element.showBackButton).to.be.true;
+            done();
+          })
+
+          element.navigateUp();
+        })
+
+        test('back button show', function() {
+          element.selected = '131567';
+          element._updateBackButton();
+          expect(element.showBackButton).to.be.false;
+          element.selected = '13';
+          element._updateBackButton();
+          expect(element.showBackButton).to.be.true;
+        })
+
+
+      });
+    </script>
+  </body>
+</html>

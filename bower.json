@@ -1,6 +1,7 @@
 {
   "name": "uniprot-taxonomy-navigator",
   "description": "Navigate through the taxonomy tree",
+  "keywords": ["web-components","uniprot","life sciences","taxonomy"],
   "main": "uniprot-taxonomy-navigator.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",

@@ -1,0 +1,26 @@
+{
+  "name": "uniprot-taxonomy-navigator",
+  "description": "Navigate through the taxonomy tree",
+  "main": "uniprot-taxonomy-navigator.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.4.0",
+    "iron-ajax": "^1.4.3"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "homepage": "https://github.com/xwatkins/uniprot-taxonomy-navigator",
+  "_release": "dc76118921",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "dc76118921012ffd4c2078068dac8a904eb66282"
+  },
+  "_source": "https://github.com/xwatkins/uniprot-taxonomy-navigator.git",
+  "_target": "master",
+  "_originalSource": "xwatkins/uniprot-taxonomy-navigator",
+  "_direct": true
+}

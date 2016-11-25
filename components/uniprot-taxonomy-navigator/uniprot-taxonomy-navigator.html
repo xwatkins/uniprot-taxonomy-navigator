@@ -1,0 +1,141 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<dom-module id="uniprot-taxonomy-navigator">
+  <template>
+    <style>
+      :host {}
+
+      .drilldown-menu {
+        width: 200px;
+        -webkit-transition-duration: 0.3s;
+        -moz-transition-duration: 0.3s;
+        -o-transition-duration: 0.3s;
+        transition-duration: 0.3s;
+      }
+
+      .drilldown-menu li {
+        position: relative;
+      }
+      .back:before {
+        content: '';
+        display: block;
+        width: 0;
+        height: 0;
+        border: inset 6px;
+        border-color: transparent #2199e8 transparent transparent;
+        border-right-style: solid;
+        border-left-width: 0;
+        border-left-width: 0;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.75rem;
+      }
+      .down:after {
+        content: '';
+        display: block;
+        width: 0;
+        height: 0;
+        border: inset 6px;
+        border-color: transparent transparent transparent #2199e8;
+        border-left-style: solid;
+        border-right-width: 0;
+        position: absolute;
+        top: 50%;
+        margin-top: -6px;
+        right: 1rem;
+      }
+
+    </style>
+    <ul class="vertical menu drilldown-menu">
+      <template is="dom-if" if="{{showBackButton}}">
+        <li>
+          <a href="#" on-click="navigateUp" class="back">Back</a>
+        </li>
+      </template>
+      <template is="dom-repeat" items="{{taxa}}">
+        <li>
+          <a href="#" on-click="navigateDown" class$="{{getClass(item.children)}}">{{item.scientificName}}</a>
+        </li>
+      </template>
+    </ul>
+
+    <iron-ajax id="requestChildren" handle-as="json" on-response="handleChildrenResponse" debounce-duration="300"></iron-ajax>
+
+    <iron-ajax id="requestParent" handle-as="json" on-response="handleParentResponse" debounce-duration="300"></iron-ajax>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'uniprot-taxonomy-navigator',
+
+      properties: {
+        taxon: {
+          type: String,
+          value: 131567
+        },
+        selected: {
+          type: String,
+          observer: '_taxonUpdated',
+          notify: true
+        },
+        taxa: {
+          type: Array
+        },
+        showBackButton: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      ready: function() {
+        this.selected = this.taxon;
+        this._requestChildren();
+      },
+
+      handleChildrenResponse(data) {
+        this.taxa = data.detail.response.taxonomies;
+      },
+
+      handleParentResponse(data) {
+        this.selected = data.detail.response.taxonomyId;
+        this._requestChildren();
+      },
+
+      navigateDown: function(e) {
+        this.selected = e.model.item.taxonomyId;
+        this._requestChildren();
+      },
+
+      navigateUp: function() {
+        this._requestParent();
+      },
+
+      getClass: function(children) {
+        return (children) ? 'down' : '';
+      },
+
+      _requestChildren: function() {
+        this.$.requestChildren.url = "http://www.ebi.ac.uk/proteins/api/taxonomy/id/" + this.selected + "/children";
+        this.$.requestChildren.generateRequest();
+        this._updateBackButton();
+      },
+
+      _requestParent: function() {
+        this.$.requestParent.url = "http://www.ebi.ac.uk/proteins/api/taxonomy/id/" + this.selected + "/parent";
+        this.$.requestParent.generateRequest();
+        this._updateBackButton();
+      },
+
+      _updateBackButton: function() {
+        this.showBackButton = (this.taxon != this.selected);
+      },
+
+      _taxonUpdated: function() {
+        this._requestChildren();
+      }
+
+    });
+  </script>
+</dom-module>
